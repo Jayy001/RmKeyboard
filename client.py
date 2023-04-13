@@ -3,7 +3,6 @@ import keyboard
 import logging
 import ssl
 import websocket
-import sys
 import argparse
 import rel
 import sys
@@ -12,11 +11,18 @@ import sys
 def hook(event):
     logging.debug(f"Caught event: {event.event_type}, {event.scan_code}, {event.name}")
     if event.event_type == keyboard.KEY_DOWN:
-        emit(EV_KEY, event.scan_code, 1)
+        if event.scan_code in current_down:
+            value = 2
+        else:
+            value = 1
+            current_down.append(event.scan_code)
+        emit(EV_KEY, event.scan_code, value)
     elif event.event_type == keyboard.KEY_UP:
+        current_down.remove(event.scan_code)
         emit(EV_KEY, event.scan_code, 0)
     else:
         return
+    print(current_down)
     emit(EV_SYN, SYN_REPORT, 0)
 
 
@@ -86,6 +92,7 @@ if __name__ == "__main__":
     address = args.address
     port = args.port
     token = args.token
+    current_down = []
 
     sslopt = {}
     if args.secure:
