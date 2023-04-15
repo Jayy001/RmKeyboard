@@ -1,205 +1,203 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script type="text/javascript"> 
-const codes = [
-    0,
-    27,
-    49,
-    50,
-    51,
-    52,
-    53,
-    54,
-    55,
-    56,
-    57,
-    48,
-    173,
-    61,
-    8,
-    9,
-    81,
-    87,
-    69,
-    82,
-    84,
-    89,
-    85,
-    73,
-    79,
-    80,
-    219,
-    221,
-    13,
-    17,
-    65,
-    83,
-    68,
-    70,
-    71,
-    72,
-    74,
-    75,
-    76,
-    59,
-    192,
-    222,
-    16,
-    220,
-    90,
-    88,
-    67,
-    86,
-    66,
-    78,
-    77,
-    108,
-    110,
-    191,
-    16,
-    42,
-    18,
-    32,
-    20,
-    112,
-    113,
-    114,
-    115,
-    116,
-    117,
-    118,
-    119,
-    120,
-    121,
-    12,
-    145,
-    36,
-    38,
-    33,
-    109,
-    37,
-    0,
-    39,
-    107,
-    35,
-    40,
-    34,
-    45,
-    46,
-];
+<!doctype html>
+<html>
+  <head>
+    <script type="text/javascript"> 
+      const codes = [
+          0,
+          27,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          48,
+          173,
+          61,
+          8,
+          9,
+          81,
+          87,
+          69,
+          82,
+          84,
+          89,
+          85,
+          73,
+          79,
+          80,
+          219,
+          221,
+          13,
+          17,
+          65,
+          83,
+          68,
+          70,
+          71,
+          72,
+          74,
+          75,
+          76,
+          59,
+          192,
+          222,
+          16,
+          220,
+          90,
+          88,
+          67,
+          86,
+          66,
+          78,
+          77,
+          108,
+          110,
+          191,
+          16,
+          42,
+          18,
+          32,
+          20,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118,
+          119,
+          120,
+          121,
+          12,
+          145,
+          36,
+          38,
+          33,
+          109,
+          37,
+          0,
+          39,
+          107,
+          35,
+          40,
+          34,
+          45,
+          46,
+      ];
 
-let current_down = [];
-var not_ready = true
+      let current_down = [];
+      var not_ready = true
 
-const details = {
-  address: prompt("Enter reMarkable socket address"),
-  port: prompt("Enter reMarkable socket port"),
-};
+      const details = {
+        address: prompt("Enter reMarkable socket address"),
+        port: prompt("Enter reMarkable socket port"),
+      };
 
-console.log(details.address)
-if (details.address == '') {
-  details.address = '192.168.0.54'
-}
+      console.log(details.address);
+      if (details.address == '') {
+        details.address = '192.168.0.54';
+      }
 
-if (details.port == '') {
-  details.port = '8765'
-}
+      if (details.port == '') {
+        details.port = '8765';
+      }
 
-var password = prompt("Enter reMarkable socket token");
-if (password == '') {
-  password = 'Password'
-}
+      var password = prompt("Enter reMarkable socket token");
+      if (password == '') {
+        password = 'Password';
+      }
 
-let socket = new WebSocket(`ws://${details.address}:${details.port}`);
+      let socket = new WebSocket(`ws://${details.address}:${details.port}`);
 
-socket.onopen = function(e) {
-  text.value = 'Sending password...'
-  socket.send(password);
-};
+      socket.onopen = function(e) {
+        text.value = 'Sending password...';
+        socket.send(password);
+      };
 
-socket.onerror = function(error) {
-  console.log(`[error] ${error.message}`);
-};
+      socket.onerror = function(error) {
+        console.log(`[error] ${error.message}`);
+      };
 
-socket.onmessage = function(event) {
-  text.value = ''
-  not_ready = false
-  console.log(`[message] Data received from reMarkable: ${event.data}`);
-};
+      socket.onmessage = function(event) {
+        text.value = '';
+        not_ready = false;
+        console.log(`[message] Data received from reMarkable: ${event.data}`);
+      };
 
-socket.onclose = function(event) {
-  if (event.code == 1006) {
-    text.value = 'Lost connection to reMarkable...'
-  } else {
-    text.value = 'Wrong token...'
-    
-  }
-  location.reload()
-};
+      socket.onclose = function(event) {
+        if (event.code == 1006) {
+          text.value = 'Lost connection to reMarkable...';
+        } else {
+          text.value = 'Wrong token...';
+        }
+        location.reload();
+      };
 
-$(function () {
-  $(document).keyup(function (e) {
-    if (not_ready) {
-      text.value = 'Waiting for connection...'
-      return;
-    }
+      document.onDOMContentLoaded = function () {
+        document.onkeyup =function (e) {
+          if (not_ready) {
+            text.value = 'Waiting for connection...';
+            return;
+          }
 
-    let code = codes.findIndex((code) => code === e.keyCode);
-    let buffer = new ArrayBuffer(12)
-    let data = new Uint32Array(buffer);
-    
-    current_down.splice(current_down.indexOf(code), 1);
+          let code = codes.findIndex((code) => code === e.keyCode);
+          let buffer = new ArrayBuffer(12);
+          let data = new Uint32Array(buffer);
+          
+          current_down.splice(current_down.indexOf(code), 1);
 
-    data[0] = 1;
-    data[1] = code;
-    data[2] = 0;
+          data[0] = 1;
+          data[1] = code;
+          data[2] = 0;
 
-    console.log(1, code, 0)
+          console.log(1, code, 0)
 
+          socket.send(data)
+          data[0] = 0
+          data[1] = 0
+          data[0] = 0
+          socket.send(data)
+        };
+        document.onkeydown = function (e) {
+          if (not_ready) {
+            text.value = 'Waiting for connection...'
+            return;
+          }
 
-    socket.send(data)
-    data[0] = 0
-    data[1] = 0
-    data[0] = 0
-    socket.send(data)
-  });
-});
+          let code = codes.findIndex((code) => code === e.keyCode);
+          let buffer = new ArrayBuffer(12)
+          let data = new Uint32Array(buffer);
+          data[0] = 1;
+          data[1] = code;
 
-$(function () {
-  $(document).keydown(function (e) {
-    if (not_ready) {
-      text.value = 'Waiting for connection...'
-      return;
-    }
+          if (current_down.includes(code)) {
+             data[2] = 2;
+          } else {
+             data[2] = 1;
+             current_down.push(code);
+          } 
 
-    let code = codes.findIndex((code) => code === e.keyCode);
-    let buffer = new ArrayBuffer(12)
-    let data = new Uint32Array(buffer);
-    data[0] = 1;
-    data[1] = code;
+          console.log(1, code, data[2])
 
-    if (current_down.includes(code)) {
-       data[2] = 2;
-    } else {
-       data[2] = 1;
-       current_down.push(code);
-    } 
-
-    console.log(1, code, data[2])
-
-    socket.send(data)
-    data[0] = 0
-    data[1] = 0
-    data[0] = 0
-
-    
-    socket.send(data)
-  });
-});
-
-</script>
-<form action="/form/submit" method="post">
+          socket.send(data)
+          data[0] = 0
+          data[1] = 0
+          data[2] = 0
+          socket.send(data)
+        };
+      };
+    </script>
+  </head>
+  <body>
+  <form action="/form/submit" method="post">
     <label for="text">ReMarkable Input:</label>
     <br>
     <textarea id="text" name="text" rows="2" cols="50" autofocus="autofocus" style="height: 100%; width: 100%; font-size: xx-large;"></textarea>
     <br/>
- </form>
+   </form>
+  </body>
+</html>
