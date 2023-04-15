@@ -19,7 +19,9 @@ async def inject(websocket):
 
     try:
         async for event in websocket:
-            type_, code, value = struct.unpack("IIi", bytes(event.encode("utf-8")))
+            if isinstance(event, str):
+                event = bytes(event.encode("utf-8"))
+            type_, code, value = struct.unpack("IIi", event)
 
             logging.debug(f"Emitting event: {(type_, code), value}")
             device.emit((type_, code), value, False)
