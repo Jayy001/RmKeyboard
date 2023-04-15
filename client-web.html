@@ -85,7 +85,7 @@ const codes = [
     34,
     45,
     46,
-];
+]; // TODO: These are deprecated, might not work on all clients - switch to update key codes
 
 let current_down = [];
 var not_ready = true
@@ -127,9 +127,9 @@ socket.onmessage = function(event) {
 };
 
 socket.onclose = function(event) {
-  if (event.code == 1006) {
+  if (event.code == 1006) { // 1006 is abnormal closure
     text.value = 'Lost connection to reMarkable...'
-  } else {
+  } else { // Most likley wrong token
     text.value = 'Wrong token...'
     
   }
@@ -144,23 +144,22 @@ $(function () {
     }
 
     let code = codes.findIndex((code) => code === e.keyCode);
-    let buffer = new ArrayBuffer(12)
+    let buffer = new ArrayBuffer(12) // Server expects 12 bytes
     let data = new Uint32Array(buffer);
     
     current_down.splice(current_down.indexOf(code), 1);
 
-    data[0] = 1;
-    data[1] = code;
-    data[2] = 0;
+    data[0] = 1; // Type of event (key press)
+    data[1] = code; // The actull key code
+    data[2] = 0; // Value of event (key up)
 
     console.log(1, code, 0)
-
 
     socket.send(data)
     data[0] = 0
     data[1] = 0
-    data[0] = 0
-    socket.send(data)
+    data[2] = 0
+    socket.send(data) // Send sync event
   });
 });
 
@@ -174,11 +173,11 @@ $(function () {
     let code = codes.findIndex((code) => code === e.keyCode);
     let buffer = new ArrayBuffer(12)
     let data = new Uint32Array(buffer);
-    data[0] = 1;
+    data[0] = 1; // Type of event (key press)
     data[1] = code;
 
     if (current_down.includes(code)) {
-       data[2] = 2;
+       data[2] = 2; // Key is alredy down, therefore send a key hold value 
     } else {
        data[2] = 1;
        current_down.push(code);
@@ -192,7 +191,7 @@ $(function () {
     data[0] = 0
 
     
-    socket.send(data)
+    socket.send(data) // Again, sync event
   });
 });
 

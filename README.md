@@ -34,4 +34,5 @@ openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout key.pem -out cert.pe
 
 2) You will need a middle device for the client software to run on (which takes keyboard input). This could even be your phone if it is rooted - Looking into being able to use your phone without root. 
 
-
+# Thanks
+Thanks to everyone at the reMarkable [discord](https://discord.com/invite/JSSGnFY) as always for the amzing work that they do and @Eeems for providing the base python client & original idea 💖
