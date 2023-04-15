@@ -87,7 +87,7 @@
           34,
           45,
           46,
-      ]; // TODO: These are deprecated, might not work on all clients - switch to update key codes
+      ];
 
       let current_down = [];
       var not_ready = true
@@ -114,7 +114,7 @@
       let socket = new WebSocket(`ws://${details.address}:${details.port}`);
 
       socket.onopen = function(e) {
-        text.value = 'Sending password...';
+        text.value = 'Sending token...';
         socket.send(password);
       };
 
@@ -128,81 +128,74 @@
         console.log(`[message] Data received from reMarkable: ${event.data}`);
       };
 
-socket.onclose = function(event) {
-  if (event.code == 1006) {
-    text.value = 'Lost connection to reMarkable...'
-  } else {
-    text.value = 'Wrong token...'
-    
-  }
-  location.reload()
-};
+      socket.onclose = function(event) {
+        if (event.code == 1006) { // 1006 is abnormal closure
+          text.value = 'Lost connection to reMarkable...';
+        } else {
+          text.value = 'Wrong token...';
+        }
+        location.reload();
+      };
 
-      document.onDOMContentLoaded = function () {
-        document.onkeyup =function (e) {
+      document.onkeyup = function (e) {
           if (not_ready) {
             text.value = 'Waiting for connection...';
             return;
           }
 
-    let code = codes.findIndex((code) => code === e.keyCode);
-    let buffer = new ArrayBuffer(12)
-    let data = new Uint32Array(buffer);
-    
-    current_down.splice(current_down.indexOf(code), 1);
+          let code = codes.findIndex((code) => code === e.keyCode);
+          let buffer = new ArrayBuffer(12); // Server is expecting 12 bytes
+          let data = new Uint32Array(buffer);
+          
+          current_down.splice(current_down.indexOf(code), 1);
 
-    data[0] = 1;
-    data[1] = code;
-    data[2] = 0;
+          data[0] = 1; // 1 is KEY event
+          data[1] = code; 
+          data[2] = 0; // Key up value
 
-    console.log(1, code, 0)
+          console.log(1, code, 0)
 
+          socket.send(data)
+          data[0] = 0
+          data[1] = 0
+          data[0] = 0
+          socket.send(data) // Send sync event
+        };
+        document.onkeydown = function (e) {
+          if (not_ready) {
+            text.value = 'Waiting for connection...'
+            return;
+          }
 
-    socket.send(data)
-    data[0] = 0
-    data[1] = 0
-    data[0] = 0
-    socket.send(data)
-  });
-});
+          let code = codes.findIndex((code) => code === e.keyCode);
+          let buffer = new ArrayBuffer(12)
+          let data = new Uint32Array(buffer);
+          data[0] = 1;
+          data[1] = code;
 
-$(function () {
-  $(document).keydown(function (e) {
-    if (not_ready) {
-      text.value = 'Waiting for connection...'
-      return;
-    }
-
-    let code = codes.findIndex((code) => code === e.keyCode);
-    let buffer = new ArrayBuffer(12)
-    let data = new Uint32Array(buffer);
-    data[0] = 1;
-    data[1] = code;
-
-    if (current_down.includes(code)) {
-       data[2] = 2;
-    } else {
-       data[2] = 1;
-       current_down.push(code);
-    } 
+          if (current_down.includes(code)) {
+             data[2] = 2; // If key is alredy down, change value to 2 (held down)
+          } else {
+             data[2] = 1;
+             current_down.push(code); // Keep track of keys that are down
+          } 
 
           console.log(1, code, data[2])
 
-    socket.send(data)
-    data[0] = 0
-    data[1] = 0
-    data[0] = 0
-
-    
-    socket.send(data)
-  });
-});
-
-</script>
-<form action="/form/submit" method="post">
+          socket.send(data)
+          data[0] = 0
+          data[1] = 0
+          data[2] = 0
+          socket.send(data) 
+        };
+    </script>
+  </head>
+  <body>
+  <form action="/form/submit" method="post">
     <label for="text">ReMarkable Input:</label>
     <br>
-    <textarea id="text" name="text" rows="2" cols="50" autofocus="autofocus" style="height: 100%; width: 100%; font-size: xx-large;"></textarea>
+    <textarea id="text" name="text" rows="2" cols="50" autofocus="autofocus" style="height: 100%; width: 100%; font-size: xx-large;">Invalid details given...please reload</textarea> 
+    <!-- If the value isn't changed then there was an error and the details given weren't correct, hence the placeholder -->
     <br/>
    </form>
   </body>
