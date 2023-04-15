@@ -87,8 +87,7 @@
           34,
           45,
           46,
-      ];
-
+      ]; // TODO: These are the codes for the US keyboard layout, and are deprecated. Use key.code instead.
       let current_down = [];
       var not_ready = true
 
@@ -188,6 +187,28 @@
           data[2] = 0
           socket.send(data) 
         };
+
+        // Create a reference for the Wake Lock.
+        let wakeLock = null;
+              
+        // create an async function to request a wake lock
+        const requestWakeLock = async () => { 
+          try {
+            wakeLock = await navigator.wakeLock.request("screen");
+            console.log("Wake Lock is active!");
+            
+            wakeLock.addEventListener("release", () => {
+              // the wake lock has been released
+              document.getElementById('wakelock').innerHTML = "Disabled";
+            });
+
+            document.getElementById('wakelock').innerHTML = 'Enabled'
+            
+          } catch (err) {
+            // The Wake Lock request has failed - usually system related, such as battery.
+            console.log(`Failed to activate wake lock: ${err.name} ${err.message}`);
+          }
+        };
     </script>
   </head>
   <body>
@@ -199,4 +220,6 @@
     <br/>
    </form>
   </body>
+  <button type="button" id="button" onclick="requestWakeLock()">Wake lock</button>
+  <label id="wakelock">Disabled</button>
 </html>
